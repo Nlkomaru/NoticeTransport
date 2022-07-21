@@ -1,0 +1,10 @@
+{
+    "id":"noticetransport",
+    "name":"NoticeTransport",
+    "version":"1.0-SNAPSHOT",
+    "description":"Transfers players to other servers",
+    "authors":["Nikomaru"],
+    "dependencies":[],
+    "main":"com.noticemc.noticetransport.velocity.NoticeTransport",
+    "permissions":["noticetransport.commands.reload","noticetransport.commands.transport"]
+}
