@@ -2,36 +2,46 @@ package com.noticemc.noticetransport.velocity.commands
 
 import cloud.commandframework.annotations.*
 import cloud.commandframework.annotations.suggestions.Suggestions
-import cloud.commandframework.context.CommandContext
 import com.noticemc.noticetransport.common.ChannelKey.namespace
 import com.noticemc.noticetransport.common.ChannelKey.value
 import com.noticemc.noticetransport.common.PlayerLocation
+import com.noticemc.noticetransport.common.TemplateLocation
 import com.noticemc.noticetransport.velocity.NoticeTransport
+import com.noticemc.noticetransport.velocity.NoticeTransport.Companion.server
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.list
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.nextPlayer
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.nowPlaying
+import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.command.CommandSource
+import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.kyori.adventure.text.minimessage.MiniMessage
+import java.nio.file.Files
 
-class TransportCommand {
+@CommandMethod("nt|noticetransport")
+object TransportCommand {
 
-    @CommandMethod("nt|noticetransport transport <playerName> <serverName> <world> <x> <y> <z>")
+    val locationFiles = NoticeTransport.dataDirectory.toFile().resolve("location")
+    val mm = MiniMessage.miniMessage()
+
+    @CommandMethod("tp -d|-default <playerName> <serverName> <world> <x> <y> <z>")
     @CommandPermission("noticetransport.commands.transport")
     @CommandDescription("player transport command")
     fun playerTransport(sender: CommandSource,
         @Argument(value = "playerName", suggestions = "playerName") playerName: String,
         @Argument(value = "serverName", suggestions = "serverName") serverName: String,
         @Argument(value = "world", suggestions = "world") world: String,
-        @Argument(value = "x") x: Int,
-        @Argument(value = "y") y: Int,
-        @Argument(value = "z") z: Int) {
+        @Argument(value = "x") x: Double,
+        @Argument(value = "y") y: Double,
+        @Argument(value = "z") z: Double) {
 
-        val mm = MiniMessage.miniMessage()
-
-        val player =
-            NoticeTransport.server.allPlayers.find { it.username == playerName } ?: return sender.sendMessage(mm.deserialize("Player not found"))
+        val player = server.allPlayers.find { it.username == playerName } ?: return sender.sendMessage(mm.deserialize("Player not found"))
         val server = NoticeTransport.server.getServer(serverName).orElse(null) ?: return sender.sendMessage(mm.deserialize("Server not found"))
-        val playerLocation = PlayerLocation(player.uniqueId, world, x.toDouble(), y.toDouble(), z.toDouble())
+        val playerLocation = PlayerLocation(player.uniqueId, world, x, y, z)
         val json = Json.encodeToString(playerLocation)
 
         server.sendPluginMessage(MinecraftChannelIdentifier.create(namespace, value), json.toByteArray())
@@ -39,22 +49,94 @@ class TransportCommand {
         if (server.serverInfo.name != player.currentServer.get().server.serverInfo.name) {
             player.createConnectionRequest(server).fireAndForget()
         }
+    }
 
+    @CommandMethod("tp -t|-template <playerName> <file>")
+    @CommandPermission("noticetransport.commands.transport")
+    @CommandDescription("player transport command")
+    fun playerTransportFile(sender: CommandSource,
+        @Argument(value = "playerName", suggestions = "playerName") playerName: String,
+        @Argument(value = "file", suggestions = "file") file: String) {
 
+        val templateFile = locationFiles.resolve("$file.json")
+
+        val playerLocation = if (templateFile.exists()) {
+            Json.decodeFromString<TemplateLocation>(Files.readString(templateFile.toPath()))
+        } else {
+            return sender.sendMessage(mm.deserialize("File not found"))
+        }
+
+        playerTransport(sender,
+            playerName,
+            playerLocation.server,
+            playerLocation.location.world,
+            playerLocation.location.x,
+            playerLocation.location.y,
+            playerLocation.location.z)
+    }
+
+    @CommandMethod("wait")
+    @CommandPermission("noticetransport.commands.wait")
+    @CommandDescription("wait command")
+    suspend fun wait(sender: CommandSource) {
+        if (sender !is Player) {
+            sender.sendMessage(mm.deserialize("You must be a player to use this command"))
+            return
+        }
+        if (list.isEmpty()) {
+            Config.config.templateFileName.keys.forEach { serverName->
+                if(nowPlaying[serverName]?.isEmpty() == true){
+                    nextPlayer(serverName)
+                }
+            }
+        } else {
+            list.add(sender)
+        }
+
+    }
+
+    @CommandMethod("tp wait accept <serverName>")
+    @CommandPermission("noticetransport.commands.tp.accept")
+    @CommandDescription("tp invite accept command")
+    @Hidden
+    fun tpAccept(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+        if (sender !is Player) {
+            sender.sendMessage(mm.deserialize("You must be a player to use this command"))
+            return
+        }
+        PlayerLeftEvent.waiting[serverName]?.remove(sender)
+
+        sender.sendMessage(mm.deserialize("You have accepted the invite"))
+
+        if (nowPlaying[serverName] == null) {
+            nowPlaying[serverName] = arrayListOf()
+        }
+        nowPlaying[serverName]?.add(sender)
+
+        val template = Config.config.templateFileName[serverName] ?: return
+
+        playerTransportFile(sender, sender.username, template)
     }
 
     @Suggestions("playerName")
-    fun playerNameSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
-        return NoticeTransport.server.allPlayers.map { it.username }.toList()
+    fun playerNameSuggestions(): List<String> {
+        return server.allPlayers.map { it.username }
     }
 
     @Suggestions("serverName")
-    fun serverSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
-        return NoticeTransport.server.allServers.map { it.serverInfo.name }.toList()
+    fun serverSuggestions(): List<String> {
+        return server.allServers.map { it.serverInfo.name }
     }
 
     @Suggestions("world")
-    fun worldSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
+    fun worldSuggestions(): List<String> {
         return listOf("world", "world_nether", "world_the_end")
     }
+
+    @Suggestions("file")
+    fun fileSuggestions(): List<String> {
+        locationFiles.mkdirs()
+        return locationFiles.listFiles()?.map { it.nameWithoutExtension }?: listOf()
+    }
+
 }

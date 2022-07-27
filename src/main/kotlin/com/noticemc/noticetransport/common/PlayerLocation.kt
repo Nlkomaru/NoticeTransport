@@ -11,6 +11,9 @@ import java.util.*
 @Serializable
 data class PlayerLocation(val player:@Serializable(with = UUIDSerializer::class) UUID, val world: String, val x: Double, val y: Double, val z: Double)
 
+@Serializable
+data class TemplateLocation(val server : String , val location: PlayerLocation)
+
 // UUID <==> String
 object UUIDSerializer : KSerializer<UUID> {
     override val descriptor = PrimitiveSerialDescriptor("UUID", PrimitiveKind.STRING)

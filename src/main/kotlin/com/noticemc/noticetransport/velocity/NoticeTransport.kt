@@ -7,6 +7,8 @@ import cloud.commandframework.velocity.CloudInjectionModule
 import cloud.commandframework.velocity.VelocityCommandManager
 import com.google.inject.*
 import com.noticemc.noticetransport.velocity.commands.TransportCommand
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent
+import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent
@@ -29,7 +31,9 @@ class NoticeTransport {
 
     @Subscribe
     fun onProxyInitialization(event: ProxyInitializeEvent) {
+        server.eventManager.register(this, PlayerLeftEvent())
         setCommand()
+        Config.load()
     }
 
     private fun setCommand() {
@@ -44,7 +48,7 @@ class NoticeTransport {
             SimpleCommandMeta.empty()
         }
 
-        annotationParser.parse(TransportCommand())
+        annotationParser.parse(TransportCommand)
     }
 
     companion object {
