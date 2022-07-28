@@ -8,10 +8,10 @@ import com.noticemc.noticetransport.common.PlayerLocation
 import com.noticemc.noticetransport.common.TemplateLocation
 import com.noticemc.noticetransport.velocity.NoticeTransport
 import com.noticemc.noticetransport.velocity.NoticeTransport.Companion.server
-import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent
 import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.list
 import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.nextPlayer
 import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.nowPlaying
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.waiting
 import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
@@ -84,15 +84,29 @@ object TransportCommand {
             return
         }
         if (list.isEmpty()) {
-            Config.config.templateFileName.keys.forEach { serverName->
-                if(nowPlaying[serverName]?.isEmpty() == true){
+            Config.config.templateFileName.keys.forEach { serverName ->
+                if (nowPlaying[serverName]?.isEmpty() == true) {
                     nextPlayer(serverName)
+                    return
                 }
             }
         } else {
             list.add(sender)
         }
+    }
 
+    @CommandMethod("clear -w|-wait")
+    @CommandPermission("noticetransport.commands.clear.wait")
+    @CommandDescription("clear command")
+    fun clear(sender: CommandSource) {
+        list.clear()
+    }
+
+    @CommandMethod("clear -p|-playing <serverName>")
+    @CommandPermission("noticetransport.commands.clear.playing")
+    @CommandDescription("clear command")
+    fun clearPlaying(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+        nowPlaying[serverName]?.clear()
     }
 
     @CommandMethod("tp wait accept <serverName>")
@@ -104,7 +118,10 @@ object TransportCommand {
             sender.sendMessage(mm.deserialize("You must be a player to use this command"))
             return
         }
-        PlayerLeftEvent.waiting[serverName]?.remove(sender)
+        if (waiting[serverName]?.contains(sender) != true) {
+            return
+        }
+        waiting[serverName]?.remove(sender)
 
         sender.sendMessage(mm.deserialize("You have accepted the invite"))
 
@@ -136,7 +153,7 @@ object TransportCommand {
     @Suggestions("file")
     fun fileSuggestions(): List<String> {
         locationFiles.mkdirs()
-        return locationFiles.listFiles()?.map { it.nameWithoutExtension }?: listOf()
+        return locationFiles.listFiles()?.map { it.nameWithoutExtension } ?: listOf()
     }
 
 }
