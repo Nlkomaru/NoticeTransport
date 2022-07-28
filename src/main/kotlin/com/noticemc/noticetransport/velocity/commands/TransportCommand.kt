@@ -24,10 +24,11 @@ import java.nio.file.Files
 
 @CommandMethod("nt|noticetransport")
 class TransportCommand {
+    companion object {
 
-    val locationFiles = NoticeTransport.dataDirectory.toFile().resolve("location")
-    val mm = MiniMessage.miniMessage()
-
+        val locationFiles = NoticeTransport.dataDirectory.toFile().resolve("location")
+        val mm = MiniMessage.miniMessage()
+    }
     @CommandMethod("tp -d|-default <playerName> <serverName> <world> <x> <y> <z>")
     @CommandPermission("noticetransport.commands.transport")
     @CommandDescription("player transport command")
@@ -98,14 +99,14 @@ class TransportCommand {
     @CommandMethod("clear -w|-wait")
     @CommandPermission("noticetransport.commands.clear.wait")
     @CommandDescription("clear command")
-    fun clear(sender: CommandSource) {
+    fun clear() {
         list.clear()
     }
 
     @CommandMethod("clear -p|-playing <serverName>")
     @CommandPermission("noticetransport.commands.clear.playing")
     @CommandDescription("clear command")
-    fun clearPlaying(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+    fun clearPlaying(@Argument(value = "serverName", suggestions = "serverName") serverName: String) {
         nowPlaying[serverName]?.clear()
     }
 
