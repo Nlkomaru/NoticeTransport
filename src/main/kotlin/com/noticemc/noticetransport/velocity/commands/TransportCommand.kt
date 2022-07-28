@@ -23,7 +23,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import java.nio.file.Files
 
 @CommandMethod("nt|noticetransport")
-object TransportCommand {
+class TransportCommand {
 
     val locationFiles = NoticeTransport.dataDirectory.toFile().resolve("location")
     val mm = MiniMessage.miniMessage()
