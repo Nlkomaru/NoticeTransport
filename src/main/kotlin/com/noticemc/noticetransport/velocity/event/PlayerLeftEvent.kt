@@ -61,6 +61,9 @@ class PlayerLeftEvent {
                 return
             }
 
+            if (waiting[serverName] == null) {
+                waiting[serverName] = arrayListOf()
+            }
 
             waiting[serverName]?.add(player)
 
@@ -72,7 +75,8 @@ class PlayerLeftEvent {
 
             delay(Config.config.timeOut.toLong() * 1000)
 
-            if (waiting[serverName]?.contains(player) == true) {
+            if (list.contains(player)) {
+
                 waiting[serverName]?.remove(player)
                 player.sendMessage(mm.deserialize("<color:red>一定時間操作がなかったため、キャンセルされました"))
                 nextPlayer(serverName)

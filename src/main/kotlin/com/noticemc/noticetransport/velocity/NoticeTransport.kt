@@ -1,6 +1,6 @@
 package com.noticemc.noticetransport.velocity
 
-import cloud.commandframework.annotations.AnnotationParser
+import cloud.commandframework.annotations.*
 import cloud.commandframework.execution.CommandExecutionCoordinator
 import cloud.commandframework.meta.SimpleCommandMeta
 import cloud.commandframework.velocity.CloudInjectionModule
