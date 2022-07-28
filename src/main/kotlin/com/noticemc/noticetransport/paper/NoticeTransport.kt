@@ -5,7 +5,7 @@ import com.noticemc.noticetransport.paper.event.NoticeTransportListener
 import com.noticemc.noticetransport.paper.event.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
 
-class NoticeTransport: JavaPlugin() {
+class NoticeTransport : JavaPlugin() {
     override fun onEnable() {
         plugin = this
         registerEvents()
@@ -19,7 +19,7 @@ class NoticeTransport: JavaPlugin() {
         server.pluginManager.registerEvents(PlayerJoinEvent(), this)
     }
 
-    companion object{
-       lateinit var plugin : NoticeTransport
+    companion object {
+        lateinit var plugin: NoticeTransport
     }
 }
