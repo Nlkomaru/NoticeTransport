@@ -1,8 +1,8 @@
 package com.noticemc.noticetransport.velocity.event
 
 import com.noticemc.noticetransport.common.TemplateLocation
-import com.noticemc.noticetransport.velocity.commands.TransportCommand.locationFiles
-import com.noticemc.noticetransport.velocity.commands.TransportCommand.mm
+import com.noticemc.noticetransport.velocity.commands.TransportCommand.Companion.locationFiles
+import com.noticemc.noticetransport.velocity.commands.TransportCommand.Companion.mm
 import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.event.Subscribe
 import com.velocitypowered.api.event.connection.DisconnectEvent

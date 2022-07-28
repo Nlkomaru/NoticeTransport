@@ -48,7 +48,7 @@ class NoticeTransport {
             SimpleCommandMeta.empty()
         }
 
-        annotationParser.parse(TransportCommand)
+        annotationParser.parse(TransportCommand())
     }
 
     companion object {
