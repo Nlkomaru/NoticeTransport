@@ -68,13 +68,7 @@ class TransportCommand {
             return sender.sendMessage(mm.deserialize("File not found"))
         }
 
-        playerTransport(sender,
-            playerName,
-            playerLocation.server,
-            playerLocation.location.world,
-            playerLocation.location.x,
-            playerLocation.location.y,
-            playerLocation.location.z)
+        playerTransport(sender, playerName, playerLocation.server, playerLocation.world, playerLocation.x, playerLocation.y, playerLocation.z)
     }
 
     @CommandMethod("wait")
@@ -102,6 +96,24 @@ class TransportCommand {
     @CommandDescription("clear command")
     fun clear() {
         list.clear()
+    }
+
+    @CommandMethod("template <fileName> <serverName> <world> <x> <y> <z>")
+    @CommandPermission("noticetransport.commands.create.template")
+    @CommandDescription("template file create  command")
+    fun createTemplate(sender: CommandSource,
+        @Argument(value = "serverName", suggestions = "serverName") serverName: String,
+        @Argument(value = "fileName") fileName: String,
+        @Argument(value = "world", suggestions = "world") world: String,
+        @Argument(value = "x") x: Double,
+        @Argument(value = "y") y: Double,
+        @Argument(value = "z") z: Double) {
+        val templateLocation = TemplateLocation(serverName, world, x, y, z)
+        val json = Json.encodeToString(templateLocation)
+        val file = locationFiles.resolve("$fileName.json")
+        file.parentFile.mkdirs()
+        file.createNewFile()
+        file.writeText(json)
     }
 
     @CommandMethod("clear -p|-playing <serverName>")

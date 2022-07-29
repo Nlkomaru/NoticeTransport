@@ -16,7 +16,7 @@ data class PlayerLocation(val player: @Serializable(with = UUIDSerializer::class
     val z: Double)
 
 @Serializable
-data class TemplateLocation(val server: String, val location: PlayerLocation)
+data class TemplateLocation(val server: String, val world: String, val x: Double, val y: Double, val z: Double)
 
 // UUID <==> String
 object UUIDSerializer : KSerializer<UUID> {
