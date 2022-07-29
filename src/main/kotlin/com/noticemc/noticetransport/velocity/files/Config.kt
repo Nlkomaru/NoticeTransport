@@ -19,7 +19,6 @@ object Config {
         val initConfig = Configuration("1.0", hashMapOf(), 30, "順番が来ました")
         if (!file.exists()) {
             file.parentFile.mkdirs()
-            file.createNewFile()
             file.writeText(hocon.encodeToConfig(initConfig).root().render(renderOptions))
         } else {
             val loadConfig = hocon.decodeFromConfig<Configuration>(ConfigFactory.parseFile(file))

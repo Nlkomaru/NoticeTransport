@@ -2,6 +2,7 @@ package com.noticemc.noticetransport.velocity.commands
 
 import cloud.commandframework.annotations.*
 import cloud.commandframework.annotations.suggestions.Suggestions
+import cloud.commandframework.context.CommandContext
 import com.noticemc.noticetransport.common.ChannelKey.namespace
 import com.noticemc.noticetransport.common.ChannelKey.value
 import com.noticemc.noticetransport.common.PlayerLocation
@@ -137,22 +138,22 @@ class TransportCommand {
     }
 
     @Suggestions("playerName")
-    fun playerNameSuggestions(): List<String> {
+    fun playerNameSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
         return server.allPlayers.map { it.username }
     }
 
     @Suggestions("serverName")
-    fun serverSuggestions(): List<String> {
+    fun serverSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
         return server.allServers.map { it.serverInfo.name }
     }
 
     @Suggestions("world")
-    fun worldSuggestions(): List<String> {
-        return listOf("world", "world_nether", "world_the_end")
+    fun worldSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
+        return listOf("world", "world_nether", "world_the_end").toList()
     }
 
     @Suggestions("file")
-    fun fileSuggestions(): List<String> {
+    fun fileSuggestions(sender: CommandContext<CommandSource>, input: String?): List<String> {
         locationFiles.mkdirs()
         return locationFiles.listFiles()?.map { it.nameWithoutExtension } ?: listOf()
     }

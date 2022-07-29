@@ -43,6 +43,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.3")
     implementation("org.jetbrains.kotlinx", "kotlinx-serialization-hocon", "1.3.3")
 
+    implementation("com.github.shynixn.mccoroutine:mccoroutine-velocity-api:2.4.0")
+    implementation("com.github.shynixn.mccoroutine:mccoroutine-velocity-core:2.4.0")
+
+
 
 }
 
