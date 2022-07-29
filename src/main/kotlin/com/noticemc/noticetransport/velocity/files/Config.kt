@@ -15,7 +15,7 @@ object Config {
     fun load() {
         val hocon = Hocon
         val renderOptions = ConfigRenderOptions.defaults().setOriginComments(false).setComments(false).setFormatted(true).setJson(false)
-        val file = NoticeTransport.dataDirectory.toFile().resolve("config.hocon")
+        val file = NoticeTransport.dataDirectory.toFile().resolve("config.conf")
         val initConfig = Configuration("1.0", hashMapOf(), 30, "順番が来ました")
         if (!file.exists()) {
             file.parentFile.mkdirs()
