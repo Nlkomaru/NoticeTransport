@@ -18,6 +18,9 @@ jobs:
 
       - uses: release-drafter/release-drafter@v5
         id: release-drafter
+        with:
+          publish: true
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

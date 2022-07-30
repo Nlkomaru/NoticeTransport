@@ -1,6 +1,7 @@
 package com.noticemc.noticetransport.velocity.files
 
 import com.noticemc.noticetransport.velocity.NoticeTransport
+import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.nowPlaying
 import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.waiting
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigRenderOptions
@@ -30,6 +31,7 @@ object Config {
         config = hocon.decodeFromConfig(ConfigFactory.parseFile(file))
         config.templateFileName.keys.forEach {
             waiting[it] = arrayListOf()
+            nowPlaying[it] = arrayListOf()
         }
     }
 }
