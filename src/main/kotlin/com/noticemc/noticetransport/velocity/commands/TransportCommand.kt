@@ -17,9 +17,12 @@ import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
+import kotlinx.coroutines.delay
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.minimessage.MiniMessage
 import java.nio.file.Files
 
@@ -30,6 +33,7 @@ class TransportCommand {
         val locationFiles = NoticeTransport.dataDirectory.toFile().resolve("location")
         val mm = MiniMessage.miniMessage()
     }
+
     @CommandMethod("tp -d|-default <playerName> <serverName> <world> <x> <y> <z>")
     @CommandPermission("noticetransport.commands.transport")
     @CommandDescription("player transport command")
@@ -91,6 +95,35 @@ class TransportCommand {
         }
     }
 
+    @CommandMethod("invite <playerName>")
+    @CommandPermission("noticetransport.commands.invite")
+    @CommandDescription("invite command")
+    suspend fun invite(sender: CommandSource, @Argument(value = "playerName", suggestions = "playerName") playerName: String) {
+        if (sender !is Player) {
+            sender.sendMessage(mm.deserialize("You must be a player to use this command"))
+            return
+        }
+        val player = server.allPlayers.find { it.username == playerName } ?: return sender.sendMessage(mm.deserialize("Player not found"))
+        val server = sender.currentServer.orElse(null) ?: return sender.sendMessage(mm.deserialize("You must be on a server to use this command"))
+        val serverName = server.serverInfo.name
+        if (nowPlaying[serverName]?.contains(sender) != true) {
+            sender.sendMessage(mm.deserialize("There are no players playing on this server"))
+            return
+        }
+        waiting[serverName]?.add(player)
+        player.sendMessage(mm.deserialize("<click:run_command:'/nt tp wait accept $serverName'><color:green><hover:show_text:'クリックで承認'>${sender.username}から${serverName}に招待されました</hover></click>"))
+
+        player.playSound(Sound.sound(Key.key("entity.firework_rocket.twinkle"), Sound.Source.AMBIENT, 1.0f, 1.0f))
+
+        delay(Config.config.timeOut.toLong() * 1000)
+
+        if (waiting[serverName]?.contains(player) == true) {
+            waiting[serverName]?.remove(player)
+            player.sendMessage(mm.deserialize("<color:red>一定時間操作がなかったため、キャンセルされました"))
+        }
+
+    }
+
     @CommandMethod("clear -w|-wait")
     @CommandPermission("noticetransport.commands.clear.wait")
     @CommandDescription("clear command")
@@ -129,19 +162,12 @@ class TransportCommand {
     @Hidden
     fun tpAccept(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
         if (sender !is Player) {
-            sender.sendMessage(mm.deserialize("You must be a player to use this command"))
             return
         }
         if (waiting[serverName]?.contains(sender) != true) {
             return
         }
         waiting[serverName]?.remove(sender)
-
-        sender.sendMessage(mm.deserialize("You have accepted the invite"))
-
-        if (nowPlaying[serverName] == null) {
-            nowPlaying[serverName] = arrayListOf()
-        }
         nowPlaying[serverName]?.add(sender)
 
         val template = Config.config.templateFileName[serverName] ?: return
