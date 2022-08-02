@@ -84,6 +84,7 @@ class TransportCommand {
             return
         }
         if (list.isEmpty()) {
+            list.add(sender)
             Config.config.templateFileName.keys.forEach { serverName ->
                 if (nowPlaying[serverName]?.isEmpty() == true) {
                     nextPlayer(serverName)
