@@ -21,7 +21,7 @@ class NoticeTransportListener : PluginMessageListener {
         val offlinePlayer = Bukkit.getOfflinePlayer(playerLocation.player)
 
         if (offlinePlayer.player != null) {
-            offlinePlayer.player?.teleport(Location(Bukkit.getWorld(playerLocation.world), playerLocation.x, playerLocation.y, playerLocation.z))
+            offlinePlayer.player?.teleport(Location(Bukkit.getWorld(playerLocation.location.world), playerLocation.location.x, playerLocation.location.y, playerLocation.location.z))
         } else {
             list.add(playerLocation)
         }
