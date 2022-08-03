@@ -24,27 +24,29 @@ class PlayerLeftEvent {
     suspend fun playerLeft(event: ServerConnectedEvent) {
         val currentServer = event.previousServer.orElse(null) ?: return
         val currentServerName = currentServer.serverInfo.name
+        val player = event.player
         if (!serverName.contains(currentServerName)) {
             return
         }
+        nowPlaying[currentServerName]?.remove(player)
         if (nowPlaying[currentServerName]?.isNotEmpty() == true) {
             return
         }
-
         nextPlayer(currentServerName)
     }
 
     @Subscribe
     suspend fun disconnect(event: DisconnectEvent) {
-        val currentServer = event.player.currentServer.get()
+        val player = event.player
+        val currentServer = player.currentServer.get()
         val currentServerName = currentServer.serverInfo.name
         if (!serverName.contains(currentServerName)) {
             return
         }
+        nowPlaying[currentServerName]?.remove(player)
         if (nowPlaying[currentServerName]?.isNotEmpty() == true) {
             return
         }
-
         nextPlayer(currentServerName)
     }
 

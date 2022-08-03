@@ -89,8 +89,9 @@ class TransportCommand {
            }
         }
         if (list.isEmpty() && !waitingExist) {
+            list.add(sender)
             Config.config.templateFileName.keys.forEach { serverName ->
-                if (nowPlaying[serverName]?.isEmpty() == true) {
+                if (nowPlaying[serverName]?.isEmpty() == true && waiting[serverName]?.isEmpty() == true) {
                     nextPlayer(serverName)
                     return
                 }
