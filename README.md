@@ -24,3 +24,12 @@ ver = "1.0"
   "z": 0
 }
 ```
+
+## Initialize teleport example 
+```plugins/Noticetransport/init.json```
+{
+  "world": "world",
+  "x": 0,
+  "y": 128,
+  "z": 0
+}
