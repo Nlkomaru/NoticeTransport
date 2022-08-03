@@ -3,10 +3,9 @@ package com.noticemc.noticetransport.velocity.commands
 import cloud.commandframework.annotations.*
 import cloud.commandframework.annotations.suggestions.Suggestions
 import cloud.commandframework.context.CommandContext
+import com.noticemc.noticetransport.common.*
 import com.noticemc.noticetransport.common.ChannelKey.namespace
 import com.noticemc.noticetransport.common.ChannelKey.value
-import com.noticemc.noticetransport.common.PlayerLocation
-import com.noticemc.noticetransport.common.TemplateLocation
 import com.noticemc.noticetransport.velocity.NoticeTransport
 import com.noticemc.noticetransport.velocity.NoticeTransport.Companion.server
 import com.noticemc.noticetransport.velocity.event.PlayerLeftEvent.Companion.list
@@ -47,7 +46,7 @@ class TransportCommand {
 
         val player = server.allPlayers.find { it.username == playerName } ?: return sender.sendMessage(mm.deserialize("Player not found"))
         val server = NoticeTransport.server.getServer(serverName).orElse(null) ?: return sender.sendMessage(mm.deserialize("Server not found"))
-        val playerLocation = PlayerLocation(player.uniqueId, world, x, y, z)
+        val playerLocation = PlayerLocation(player.uniqueId, Location(world, x, y, z))
         val json = Json.encodeToString(playerLocation)
 
         server.sendPluginMessage(MinecraftChannelIdentifier.create(namespace, value), json.toByteArray())
@@ -72,7 +71,7 @@ class TransportCommand {
             return sender.sendMessage(mm.deserialize("File not found"))
         }
 
-        playerTransport(sender, playerName, playerLocation.server, playerLocation.world, playerLocation.x, playerLocation.y, playerLocation.z)
+        playerTransport(sender, playerName, playerLocation.server, playerLocation.location.world, playerLocation.location.x, playerLocation.location.y, playerLocation.location.z)
     }
 
     @CommandMethod("wait")
@@ -83,7 +82,13 @@ class TransportCommand {
             sender.sendMessage(mm.deserialize("You must be a player to use this command"))
             return
         }
-        if (list.isEmpty()) {
+        var waitingExist = false
+        Config.config.templateFileName.keys.forEach { serverName ->
+           if(waiting[serverName]?.isNotEmpty() == true){
+               waitingExist = true
+           }
+        }
+        if (list.isEmpty() && !waitingExist) {
             Config.config.templateFileName.keys.forEach { serverName ->
                 if (nowPlaying[serverName]?.isEmpty() == true) {
                     nextPlayer(serverName)
@@ -141,7 +146,7 @@ class TransportCommand {
         @Argument(value = "x") x: Double,
         @Argument(value = "y") y: Double,
         @Argument(value = "z") z: Double) {
-        val templateLocation = TemplateLocation(serverName, world, x, y, z)
+        val templateLocation = TemplateLocation(serverName, Location(world, x, y, z))
         val json = Json.encodeToString(templateLocation)
         val file = locationFiles.resolve("$fileName.json")
         file.parentFile.mkdirs()

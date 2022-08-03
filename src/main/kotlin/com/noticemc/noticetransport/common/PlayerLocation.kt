@@ -9,14 +9,16 @@ import kotlinx.serialization.encoding.Encoder
 import java.util.*
 
 @Serializable
-data class PlayerLocation(val player: @Serializable(with = UUIDSerializer::class) UUID,
-    val world: String,
+data class PlayerLocation(val player: @Serializable(with = UUIDSerializer::class) UUID, val location: Location)
+
+@Serializable
+data class Location(val world: String,
     val x: Double,
     val y: Double,
     val z: Double)
 
 @Serializable
-data class TemplateLocation(val server: String, val world: String, val x: Double, val y: Double, val z: Double)
+data class TemplateLocation(val server: String, val location: Location)
 
 // UUID <==> String
 object UUIDSerializer : KSerializer<UUID> {
