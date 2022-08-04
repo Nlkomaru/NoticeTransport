@@ -71,7 +71,13 @@ class TransportCommand {
             return sender.sendMessage(mm.deserialize("File not found"))
         }
 
-        playerTransport(sender, playerName, playerLocation.server, playerLocation.location.world, playerLocation.location.x, playerLocation.location.y, playerLocation.location.z)
+        playerTransport(sender,
+            playerName,
+            playerLocation.server,
+            playerLocation.location.world,
+            playerLocation.location.x,
+            playerLocation.location.y,
+            playerLocation.location.z)
     }
 
     @CommandMethod("wait")
@@ -84,9 +90,9 @@ class TransportCommand {
         }
         var notWaiting = false
         Config.config.templateFileName.keys.forEach { serverName ->
-           if(waiting[serverName]?.isEmpty() == true){
-               notWaiting = true
-           }
+            if (waiting[serverName]?.isEmpty() == true) {
+                notWaiting = true
+            }
         }
         if (list.isEmpty() && notWaiting) {
             list.add(sender)
@@ -140,13 +146,22 @@ class TransportCommand {
     @CommandPermission("noticetransport.commands.show.wait")
     @CommandDescription("show command")
     fun show(sender: CommandSource) {
-        sender.sendMessage(mm.deserialize("waiting: ${waiting.values.flatten().joinToString(", ")}"))
+        val names = arrayListOf<String>()
+        list.forEach {
+            names.add(it.username)
+        }
+        sender.sendMessage(mm.deserialize("waiting: ${names.joinToString(", ")}"))
     }
 
     @CommandMethod("show -p <serverName>")
     @CommandPermission("noticetransport.commands.show.playing")
     @CommandDescription("show command")
     fun showPlaying(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+        val names = arrayListOf<String>()
+        nowPlaying[serverName]?.forEach {
+            names.add(it.username)
+        }
+
         sender.sendMessage(mm.deserialize("playing: ${nowPlaying[serverName]?.joinToString(", ")}"))
     }
 
