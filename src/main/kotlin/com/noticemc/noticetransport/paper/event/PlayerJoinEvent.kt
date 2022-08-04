@@ -21,7 +21,7 @@ class PlayerJoinEvent : Listener {
                 playerLocation.location.z))
             list.remove(playerLocation)
         } else {
-            if (initLocation != null) {
+            if (initLocation != null && !player.hasPermission("noticetransport.init.pass")) {
                 player.teleport(Location(Bukkit.getWorld(initLocation.world), initLocation.x, initLocation.y, initLocation.z))
             }
         }
