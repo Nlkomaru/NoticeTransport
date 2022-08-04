@@ -161,8 +161,7 @@ class TransportCommand {
         nowPlaying[serverName]?.forEach {
             names.add(it.username)
         }
-
-        sender.sendMessage(mm.deserialize("playing: ${nowPlaying[serverName]?.joinToString(", ")}"))
+        sender.sendMessage(mm.deserialize("waiting: ${names.joinToString(", ")}"))
     }
 
     @CommandMethod("template <fileName> <serverName> <world> <x> <y> <z>")
