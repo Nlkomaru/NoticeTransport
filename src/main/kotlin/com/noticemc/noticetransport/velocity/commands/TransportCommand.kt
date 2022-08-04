@@ -16,7 +16,7 @@ import com.noticemc.noticetransport.velocity.files.Config
 import com.velocitypowered.api.command.CommandSource
 import com.velocitypowered.api.proxy.Player
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -36,7 +36,7 @@ class TransportCommand {
     @CommandMethod("tp -d|-default <playerName> <serverName> <world> <x> <y> <z>")
     @CommandPermission("noticetransport.commands.transport")
     @CommandDescription("player transport command")
-    fun playerTransport(sender: CommandSource,
+    suspend fun playerTransport(sender: CommandSource,
         @Argument(value = "playerName", suggestions = "playerName") playerName: String,
         @Argument(value = "serverName", suggestions = "serverName") serverName: String,
         @Argument(value = "world", suggestions = "world") world: String,
@@ -52,6 +52,7 @@ class TransportCommand {
         server.sendPluginMessage(MinecraftChannelIdentifier.create(namespace, value), json.toByteArray())
 
         if (server.serverInfo.name != player.currentServer.get().server.serverInfo.name) {
+            delay(500)
             player.createConnectionRequest(server).fireAndForget()
         }
     }
@@ -59,14 +60,16 @@ class TransportCommand {
     @CommandMethod("tp -t|-template <playerName> <file>")
     @CommandPermission("noticetransport.commands.transport")
     @CommandDescription("player transport command")
-    fun playerTransportFile(sender: CommandSource,
+    suspend fun playerTransportFile(sender: CommandSource,
         @Argument(value = "playerName", suggestions = "playerName") playerName: String,
         @Argument(value = "file", suggestions = "file") file: String) {
 
         val templateFile = locationFiles.resolve("$file.json")
 
         val playerLocation = if (templateFile.exists()) {
-            Json.decodeFromString<TemplateLocation>(Files.readString(templateFile.toPath()))
+            Json.decodeFromString<TemplateLocation>(withContext(Dispatchers.IO) {
+                Files.readString(templateFile.toPath())
+            })
         } else {
             return sender.sendMessage(mm.deserialize("File not found"))
         }
@@ -161,8 +164,7 @@ class TransportCommand {
         nowPlaying[serverName]?.forEach {
             names.add(it.username)
         }
-
-        sender.sendMessage(mm.deserialize("playing: ${nowPlaying[serverName]?.joinToString(", ")}"))
+        sender.sendMessage(mm.deserialize("playing: ${names.joinToString(", ")}"))
     }
 
     @CommandMethod("template <fileName> <serverName> <world> <x> <y> <z>")
@@ -194,7 +196,7 @@ class TransportCommand {
     @CommandPermission("noticetransport.commands.tp.accept")
     @CommandDescription("tp invite accept command")
     @Hidden
-    fun tpAccept(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+    suspend fun tpAccept(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
         if (sender !is Player) {
             return
         }
