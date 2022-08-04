@@ -82,13 +82,13 @@ class TransportCommand {
             sender.sendMessage(mm.deserialize("You must be a player to use this command"))
             return
         }
-        var waitingExist = false
+        var notWaiting = false
         Config.config.templateFileName.keys.forEach { serverName ->
-           if(waiting[serverName]?.isNotEmpty() == true){
-               waitingExist = true
+           if(waiting[serverName]?.isEmpty() == true){
+               notWaiting = true
            }
         }
-        if (list.isEmpty() && !waitingExist) {
+        if (list.isEmpty() && notWaiting) {
             list.add(sender)
             Config.config.templateFileName.keys.forEach { serverName ->
                 if (nowPlaying[serverName]?.isEmpty() == true && waiting[serverName]?.isEmpty() == true) {
@@ -119,7 +119,7 @@ class TransportCommand {
         waiting[serverName]?.add(player)
         player.sendMessage(mm.deserialize("<click:run_command:'/nt tp wait accept $serverName'><color:green><hover:show_text:'クリックで承認'>${sender.username}から${serverName}に招待されました</hover></click>"))
 
-        player.playSound(Sound.sound(Key.key("entity.firework_rocket.twinkle"), Sound.Source.AMBIENT, 1.0f, 1.0f))
+        player.playSound(Sound.sound(Key.key("block.note_block.iron_xylophone"), Sound.Source.VOICE, 1.0F, 1.0F))
 
         delay(Config.config.timeOut.toLong() * 1000)
 
@@ -127,7 +127,6 @@ class TransportCommand {
             waiting[serverName]?.remove(player)
             player.sendMessage(mm.deserialize("<color:red>一定時間操作がなかったため、キャンセルされました"))
         }
-
     }
 
     @CommandMethod("clear -w|-wait")
@@ -135,6 +134,20 @@ class TransportCommand {
     @CommandDescription("clear command")
     fun clear() {
         list.clear()
+    }
+
+    @CommandMethod("show -w")
+    @CommandPermission("noticetransport.commands.show.wait")
+    @CommandDescription("show command")
+    fun show(sender: CommandSource) {
+        sender.sendMessage(mm.deserialize("waiting: ${waiting.values.flatten().joinToString(", ")}"))
+    }
+
+    @CommandMethod("show -p <serverName>")
+    @CommandPermission("noticetransport.commands.show.playing")
+    @CommandDescription("show command")
+    fun showPlaying(sender: CommandSource, @Argument(value = "serverName", suggestions = "serverName") serverName: String) {
+        sender.sendMessage(mm.deserialize("playing: ${nowPlaying[serverName]?.joinToString(", ")}"))
     }
 
     @CommandMethod("template <fileName> <serverName> <world> <x> <y> <z>")

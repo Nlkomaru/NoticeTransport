@@ -38,16 +38,14 @@ class PlayerLeftEvent {
     @Subscribe
     suspend fun disconnect(event: DisconnectEvent) {
         val player = event.player
-        val currentServer = player.currentServer.get()
-        val currentServerName = currentServer.serverInfo.name
-        if (!serverName.contains(currentServerName)) {
-            return
+        val serverList = Config.config.templateFileName.keys.toList()
+
+        serverList.forEach {
+            nowPlaying[it]?.remove(player)
+            if (nowPlaying[it]?.isEmpty() == true) {
+                nextPlayer(it)
+            }
         }
-        nowPlaying[currentServerName]?.remove(player)
-        if (nowPlaying[currentServerName]?.isNotEmpty() == true) {
-            return
-        }
-        nextPlayer(currentServerName)
     }
 
     companion object {
@@ -63,14 +61,13 @@ class PlayerLeftEvent {
                 return
             }
 
-
             waiting[serverName]?.add(player)
 
             player.sendMessage(mm.deserialize("<click:run_command:'/nt tp wait accept $serverName'><color:green><hover:show_text:'クリックで承認'>${
                 Config.config.message
             }</hover></click>"))
 
-            player.playSound(Sound.sound(Key.key("entity.firework_rocket.twinkle"), Sound.Source.AMBIENT, 1.0f, 1.0f))
+            player.playSound(Sound.sound(Key.key("block.note_block.iron_xylophone"), Sound.Source.VOICE, 1.0F, 1.0F))
 
             delay(Config.config.timeOut.toLong() * 1000)
 
