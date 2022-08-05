@@ -49,12 +49,13 @@ class TransportCommand {
         val playerLocation = PlayerLocation(player.uniqueId, Location(world, x, y, z))
         val json = Json.encodeToString(playerLocation)
 
-        server.sendPluginMessage(MinecraftChannelIdentifier.create(namespace, value), json.toByteArray())
+
 
         if (server.serverInfo.name != player.currentServer.get().server.serverInfo.name) {
-            delay(500)
             player.createConnectionRequest(server).fireAndForget()
+            delay(2500)
         }
+        server.sendPluginMessage(MinecraftChannelIdentifier.create(namespace, value), json.toByteArray())
     }
 
     @CommandMethod("tp -t|-template <playerName> <file>")
@@ -93,19 +94,21 @@ class TransportCommand {
         }
         var notWaiting = false
         Config.config.templateFileName.keys.forEach { serverName ->
-            if (waiting[serverName]?.isEmpty() == true) {
+            if (waiting[serverName]!!.isEmpty()) {
                 notWaiting = true
             }
         }
         if (list.isEmpty() && notWaiting) {
             list.add(sender)
             Config.config.templateFileName.keys.forEach { serverName ->
-                if (nowPlaying[serverName]?.isEmpty() == true && waiting[serverName]?.isEmpty() == true) {
+                if (nowPlaying[serverName]!!.isEmpty() && waiting[serverName]!!.isEmpty()) {
+                    println("$serverName is empty")
                     nextPlayer(serverName)
                     return
                 }
             }
         } else {
+            sender.sendMessage(mm.deserialize("Wait..."))
             list.add(sender)
         }
     }
@@ -200,15 +203,26 @@ class TransportCommand {
         if (sender !is Player) {
             return
         }
-        if (waiting[serverName]?.contains(sender) != true) {
+        if (!waiting[serverName]!!.contains(sender)) {
             return
         }
-        waiting[serverName]?.remove(sender)
-        nowPlaying[serverName]?.add(sender)
+        waiting[serverName]!!.remove(sender)
 
         val template = Config.config.templateFileName[serverName] ?: return
 
         playerTransportFile(sender, sender.username, template)
+        delay(3000)
+        if (sender.currentServer.orElse(null).serverInfo.name == serverName) {
+            nowPlaying[serverName]!!.add(sender)
+        }
+    }
+
+    @CommandMethod("reload")
+    @CommandPermission("noticetransport.commands.reload")
+    @CommandDescription("reload command")
+    fun reload(sender: CommandSource) {
+        Config.load()
+        sender.sendMessage(mm.deserialize("reloaded"))
     }
 
     @Suggestions("playerName")

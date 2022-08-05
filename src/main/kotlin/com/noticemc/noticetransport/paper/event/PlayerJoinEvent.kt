@@ -2,6 +2,7 @@ package com.noticemc.noticetransport.paper.event
 
 import com.noticemc.noticetransport.common.PlayerLocation
 import com.noticemc.noticetransport.paper.InitLocation.initLocation
+import com.noticemc.noticetransport.paper.NoticeTransport
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.event.EventHandler
@@ -14,6 +15,7 @@ class PlayerJoinEvent : Listener {
         val player = event.player
         val uuid = player.uniqueId
         val playerLocation = list.find { it.player == uuid }
+        NoticeTransport.plugin.logger.info("playerLocation: $playerLocation")
         if (playerLocation != null) {
             player.teleport(Location(Bukkit.getWorld(playerLocation.location.world),
                 playerLocation.location.x,
