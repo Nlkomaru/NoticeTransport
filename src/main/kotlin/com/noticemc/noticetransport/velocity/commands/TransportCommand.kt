@@ -52,6 +52,7 @@ class TransportCommand {
 
 
         if (server.serverInfo.name != player.currentServer.get().server.serverInfo.name) {
+            delay(500)
             player.createConnectionRequest(server).fireAndForget()
             delay(2500)
         }
